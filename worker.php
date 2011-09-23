@@ -5,7 +5,13 @@
  *																Léo Peltier
  */
 
+/// Executes PHP code in a separate thread.
 class Worker extends Proc {
+
+	/** Executes PHP.
+	 * \param $params string containing the parameters to give to PHP.
+	 * If $params is a file path, PHP will execute the file.
+	 * */
 	public function __construct($params = null) {
 		parent::__construct("php $params");
 		$this->open();
