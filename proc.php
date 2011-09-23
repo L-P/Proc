@@ -1,4 +1,9 @@
 <?php
+/* <contact@leo-peltier.fr> wrote this file. As long as you retain this
+ * notice you can do whatever you want with this stuff. If we meet some day,
+ * and you think this stuff is worth it, you can buy me a beer in return.
+ *																Léo Peltier
+ */
 
 /// POO interface to proc_* functions.
 class Proc {
@@ -6,8 +11,8 @@ class Proc {
 	const STDOUT	= 1; //< Index of the stdout pipe.
 	const STDERR	= 2; //< Index of the stderr pipe.
 
-	protected $proc = null; //< Our proc handler.
-	protected $pipes = null; ///< Array with stdin, stdout and stderr.
+	protected $proc		= null; //< Our proc handler.
+	protected $pipes	= null; ///< Array with stdin, stdout and stderr.
 
 	/// Default parameters for proc_open(), will be overrided by thoses given to __construct().
 	protected $procParams = array(
@@ -22,6 +27,7 @@ class Proc {
 		'other_options'		=> null
 	);
 
+	protected $wroteToIn = false; ///< Flag set if we already wrote to STDIN.
 
 	/** Constructor.
 	 * \param $cmd command to execute.
@@ -77,6 +83,7 @@ class Proc {
 			fclose($pipe);
 		}
 		$this->pipes = null;
+		$this->wroteToIn = false;
 
 		$ret = proc_close($this->proc);
 		$this->proc = null;
@@ -88,6 +95,9 @@ class Proc {
 	 * \return contents of stdout.
 	 * */
 	public function out() {
+		if(empty($this->pipes[self::STDOUT]))
+			throw new \RuntimeException('STDOUT is unreachable.');
+
 		return stream_get_contents($this->pipes[self::STDOUT]);
 	}
 
@@ -96,6 +106,9 @@ class Proc {
 	 * \return contents of stderr.
 	 * */
 	public function err() {
+		if(empty($this->pipes[self::STDERR]))
+			throw new \RuntimeException('STDERR is unreachable.');
+
 		return stream_get_contents($this->pipes[self::STDERR]);
 	}
 
@@ -104,12 +117,16 @@ class Proc {
 	 * \param $in what to write to stdin.
 	 * */
 	public function in($in) {
-		if(!$this->pipes[self::STDIN])
+		if($this->wroteToIn)
 			throw new \RuntimeException('Can only write to stdin once.');
+
+		if(empty($this->pipes[self::STDIN]))
+			throw new \RuntimeException('STDIN is unreachable.');
 
 		fwrite($this->pipes[self::STDIN], $in);
 		fclose($this->pipes[self::STDIN]);
 		$this->pipes[self::STDIN] = null;
+		$this->wroteToIn = true;
 	}
 
 
@@ -121,12 +138,4 @@ class Proc {
 		$this->close();
 	}
 }
-
-
-$foo = new Proc('cat');
-print_r($foo->open());		echo PHP_EOL;
-$foo->in('test');
-print_r($foo->status());
-print_r($foo->out());		echo PHP_EOL;
-print_r($foo->close());		echo PHP_EOL;
 
