@@ -69,7 +69,11 @@ class Proc {
 		if(!$this->proc)
 			throw new \RuntimeException('Process not running.');
 
+		// PHP says we must close pipes to avoid deadlocks when closing the process.
 		foreach($this->pipes as $pipe) {
+			if(empty($pipe))
+				continue;
+
 			fclose($pipe);
 		}
 		$this->pipes = null;
@@ -100,7 +104,12 @@ class Proc {
 	 * \param $in what to write to stdin.
 	 * */
 	public function in($in) {
-		fwrite($in);
+		if(!$this->pipes[self::STDIN])
+			throw new \RuntimeException('Can only write to stdin once.');
+
+		fwrite($this->pipes[self::STDIN], $in);
+		fclose($this->pipes[self::STDIN]);
+		$this->pipes[self::STDIN] = null;
 	}
 
 
@@ -114,8 +123,9 @@ class Proc {
 }
 
 
-$foo = new Proc('free');
+$foo = new Proc('cat');
 print_r($foo->open());		echo PHP_EOL;
+$foo->in('test');
 print_r($foo->status());
 print_r($foo->out());		echo PHP_EOL;
 print_r($foo->close());		echo PHP_EOL;
