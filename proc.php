@@ -11,6 +11,9 @@ class Proc {
 	const STDOUT	= 1; //< Index of the stdout pipe.
 	const STDERR	= 2; //< Index of the stderr pipe.
 
+	const SIGTERM = 15;	//< SIGTERM signal number.
+	const SIGKILL = 9;	//< SIGKILL signal number.
+
 	protected $proc		= null; //< Our proc handler.
 	protected $pipes	= null; ///< Array with stdin, stdout and stderr.
 
@@ -76,14 +79,7 @@ class Proc {
 			throw new \RuntimeException('Process not running.');
 
 		// PHP says we must close pipes to avoid deadlocks when closing the process.
-		foreach($this->pipes as $pipe) {
-			if(empty($pipe))
-				continue;
-
-			fclose($pipe);
-		}
-		$this->pipes = null;
-		$this->wroteToIn = false;
+		$this->closePipes();
 
 		$ret = proc_close($this->proc);
 		$this->proc = null;
@@ -129,6 +125,26 @@ class Proc {
 		$this->wroteToIn = true;
 	}
 
+	protected function closePipes() {
+		foreach($this->pipes as $pipe) {
+			if(empty($pipe))
+				continue;
+
+			fclose($pipe);
+		}
+		$this->pipes = null;
+		$this->wroteToIn = false;
+	}
+
+	/// Kills the process.
+	public function kill($signal = self::SIGTERM) {
+		if(!$this->proc)
+			throw new \RuntimeException('Process not running.');
+
+		$this->closePipes();
+		proc_terminate($this->proc, $signal);
+		$this->proc = null;
+	}
 
 	/// Destructor.
 	public function __destruct() {
