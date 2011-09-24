@@ -17,7 +17,8 @@ in PHP, which is cool.
 How?
 ---
 Proc uses PHP proc\_\* functions to launch a separate thread and provides
-ways to interact with it.
+ways to interact with it.  
+Files are documented in a Doxygen-friendly way.
 
 
 Who? When?
@@ -26,4 +27,16 @@ Who? When?
     leo
     $ date
 	Sat Sep 24 00:27:27 CEST 2011
+
+Example
+-------
+    <?php
+    
+    require_once 'proc.php';
+    require_once 'worker.php';
+    
+    $foo = new Worker();
+    $foo->in('<?php echo "Hello world!"; ?>');
+    echo $foo->out(); // Hello World!
+    $foo->close();
 
