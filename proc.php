@@ -14,6 +14,8 @@ class Proc {
 	const SIGTERM = 15;	//< SIGTERM signal number.
 	const SIGKILL = 9;	//< SIGKILL signal number.
 
+	const STD_BUFFER_SIZE = 1024; //< Reads from stdout and stderr will be made by chunks of n bytes.
+
 	protected $proc		= null; //< Our proc handler.
 	protected $pipes	= null; ///< Array with stdin, stdout and stderr.
 
@@ -91,10 +93,7 @@ class Proc {
 	 * \return contents of stdout.
 	 * */
 	public function out() {
-		if(empty($this->pipes[self::STDOUT]))
-			throw new \RuntimeException('STDOUT is unreachable.');
-
-		return stream_get_contents($this->pipes[self::STDOUT]);
+		return $this->readPipe(self::STDOUT);
 	}
 
 
@@ -102,10 +101,49 @@ class Proc {
 	 * \return contents of stderr.
 	 * */
 	public function err() {
-		if(empty($this->pipes[self::STDERR]))
-			throw new \RuntimeException('STDERR is unreachable.');
+		return $this->readPipe(self::STDERR);
+	}
 
-		return stream_get_contents($this->pipes[self::STDERR]);
+
+	/** Returns the contents of a pipe.
+	 * \return the contents of the given pipe.
+	 * */
+	protected function readPipe($pipeNumber) {
+		if(empty($this->pipes[$pipeNumber]))
+			throw new \RuntimeException("Pipe $pipeNumber is unreachable.");
+
+		return fread($this->pipes[$pipeNumber], self::STD_BUFFER_SIZE);
+	}
+
+
+	/** Returns the contents of a pipe.
+	 * This function is blocking, PHP will halt until EOF is reached.
+	 * \return the contents of the given pipe.
+	 * */
+	protected function readBufferedPipe($pipeNumber) {
+		if(empty($this->pipes[$pipeNumber]))
+			throw new \RuntimeException("Pipe $pipeNumber is unreachable.");
+
+		return stream_get_contents($this->pipes[$pipeNumber]);
+	}
+
+
+	/** Returns the contents of stderr.
+	 * \see readBufferedPipe().
+	 * is reached.
+	 * \returs contents of stderr.
+	 * */
+	public function bufferedErr() {
+		return $this->readBufferedPipe(self::STDERR);
+	}
+
+	/** Returns the contents of stdout.
+	 * \see readBufferedPipe().
+	 * is reached.
+	 * \returs contents of stdout.
+	 * */
+	public function bufferedOut() {
+		return $this->readBufferedPipe(self::STDOUT);
 	}
 
 
