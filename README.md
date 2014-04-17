@@ -30,13 +30,13 @@ Who? When?
 
 Example
 -------
-    <?php
-    
-    require_once 'proc.php';
-    require_once 'worker.php';
-    
-    $foo = new Worker();
-    $foo->in('<?php echo "Hello world!"; ?>');
-    echo $foo->out(); // Hello World!
-    $foo->close();
+```php
+<?php
+require_once 'proc.php';
+require_once 'worker.php';
 
+$foo = new Worker();
+$foo->in('<?php echo "Hello world!"; ?>');
+echo $foo->out(); // Hello World!
+$foo->close();
+```
