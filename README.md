@@ -32,10 +32,9 @@ Example
 -------
 ```php
 <?php
-require_once 'proc.php';
-require_once 'worker.php';
+require_once 'vendor/autoload.php';
 
-$foo = new Worker();
+$foo = new lpeltier\Worker();
 $foo->in('<?php echo "Hello world!"; ?>');
 echo $foo->out(); // Hello World!
 $foo->close();

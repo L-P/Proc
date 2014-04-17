@@ -5,6 +5,8 @@
  * return.
  */
 
+namespace lpeltier;
+
 /// Executes PHP code in a separate thread.
 class Worker extends Proc {
     /** Executes PHP.

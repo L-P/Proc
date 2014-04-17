@@ -5,6 +5,8 @@
  * return.
  */
 
+namespace lpeltier;
+
 /// POO interface to proc_* functions.
 class Proc {
     const STDIN  = 0; //< Index of the stdin pipe.
